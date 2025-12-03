@@ -129,7 +129,7 @@
             z-index: 900;
         }
 
-        /* BOK PO PRAWEJ – OBRAZEK KUBICY + GUZIK „KIEŁBACHA” */
+        /* PRAWY BOK: obrazek Kubicy + guzik „Kiełbacha” */
 
         #kubicaBox {
             position: fixed;
@@ -802,9 +802,15 @@
 
     setCard();
 
-    // Audio – Kubica (odpalane obrazkiem)
+    // Audio – Kubica (toggle: gra / pauza) odpalane obrazkiem
     const kubicaAudio = document.getElementById("kubicaAudio");
     const kubicaImg   = document.getElementById("kubicaImg");
+    let kubicaPlaying = false;
+
+    // gdy utwór sam się skończy, ustaw stan na "nie gra"
+    kubicaAudio.addEventListener("ended", () => {
+        kubicaPlaying = false;
+    });
 
     kubicaImg.addEventListener("click", () => {
         // animacja podskoku
@@ -812,13 +818,23 @@
         void kubicaImg.offsetWidth; // reset animacji
         kubicaImg.classList.add("bounce");
 
-        // odtwarzanie dźwięku (od początku)
-        try {
-            kubicaAudio.currentTime = 0;
-        } catch (e) {}
-        kubicaAudio.play().catch(() => {
-            // jeśli przeglądarka zablokuje – po prostu nic nie rób
-        });
+        if (!kubicaPlaying) {
+            // start od początku
+            try {
+                kubicaAudio.currentTime = 0;
+            } catch (e) {}
+            kubicaAudio.play()
+                .then(() => {
+                    kubicaPlaying = true;
+                })
+                .catch(() => {
+                    // jeśli przeglądarka zablokuje – nic nie robimy
+                });
+        } else {
+            // jeśli już gra – zatrzymaj
+            kubicaAudio.pause();
+            kubicaPlaying = false;
+        }
     });
 
     // Wideo – Play/Pauza

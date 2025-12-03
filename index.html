@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Fiszki z pozytywizmu</title>
+    <style>
+        :root {
+            --bg: #141625;
+            --bg2: #1f2136;
+            --accent: #ffb300;
+            --accent2: #536dfe;
+            --card-front: #fdfdfd;
+            --card-back: #fff3c7;
+            --text-main: #222;
+            --text-light: #f5f5f5;
+            --muted: #b0b5d1;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", Roboto, sans-serif;
+
+            /* TŁO: lokalne zdjęcie f1.08.jpg + przyciemniony gradient */
+            background:
+                linear-gradient(135deg, rgba(10, 12, 25, 0.88), rgba(10, 12, 25, 0.94)),
+                url("f1.08.jpg") center / cover no-repeat fixed;
+
+            color: var(--text-light);
+
+            /* WSZYSTKO JEDNO POD DRUGIM (WIDEO NAD FISZKAMI) */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        /* PASEK WIDEO NA GÓRZE */
+
+        .video-bar {
+            width: 1100px;
+            max-width: 100%;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .video-bar video {
+            flex: 1;
+            width: 100%;
+            height: 210px;          /* niska wysokość → „szerszy” format */
+            border-radius: 14px;
+            object-fit: fill;       /* rozciąga obraz (zmiana proporcji) */
+            background: #000;
+            box-shadow:
+                0 18px 35px rgba(7, 5, 12, 0.9),
+                0 0 0 1px rgba(15, 18, 40, 0.7);
+        }
+
+        #videoToggleBtn {
+            flex-shrink: 0;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #8e24aa, #d81b60);
+            color: #ffffff;
+            box-shadow: 0 10px 22px rgba(216, 27, 96, 0.6);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        #videoToggleBtn:hover {
+            filter: brightness(1.07);
+            transform: translateY(-1px);
+        }
+
+        #videoToggleBtn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: none;
+        }
+
+        /* GŁÓWNY BLOK Z FISZKAMI */
+
+        .app {
+            width: 1100px;
+            max-width: 100%;
+            padding: 18px 22px 22px;
+            border-radius: 18px;
+            background: rgba(10, 12, 25, 0.9);
+            box-shadow:
+                0 24px 60px rgba(0, 0, 0, 0.65),
+                0 0 0 1px rgba(255, 255, 255, 0.04);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 0.04em;
+        }
+
+        h2 {
+            margin: 3px 0 18px;
+            font-weight: 400;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        /* GIF PO LEWEJ STRONIE – STAŁY */
+
+        #sideGif {
+            position: fixed;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 160px;
+            pointer-events: none;
+            z-index: 900;
+        }
+
+        /* PRZYCISK „ROBERT KUBICA” PO PRAWEJ STRONIE */
+
+        #kubicaBtn {
+            position: fixed;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #00bcd4, #3f51b5);
+            color: #ffffff;
+            border-radius: 999px;
+            border: none;
+            box-shadow: 0 10px 22px rgba(0, 188, 212, 0.6);
+            cursor: pointer;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+
+        #kubicaBtn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-50%) translateY(-1px);
+        }
+
+        #kubicaBtn:active {
+            transform: translateY(-50%) translateY(1px) scale(0.98);
+            box-shadow: none;
+        }
+
+        /* MINI‑PLAYER SPOTIFY – PRAWY DOLNY RÓG */
+
+        #spotifyPlayer {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            z-index: 950;
+        }
+
+        /* KARTA Z PYTANIEM */
+
+        .card-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+            perspective: 1200px;
+        }
+
+        .card {
+            width: 620px;
+            max-width: 100%;
+            height: 230px;
+            position: relative;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 10px -10px -10px 10px;
+            border-radius: 18px;
+            background: radial-gradient(ellipse at bottom, rgba(0,0,0,0.7), transparent 70%);
+            filter: blur(10px);
+            opacity: 0.7;
+            z-index: 0;
+        }
+
+        .card-inner {
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            background: transparent;
+            transform-style: preserve-3d;
+            transition: transform 0.7s cubic-bezier(.2,.85,.35,1.35);
+            box-shadow:
+                0 18px 35px rgba(7, 5, 12, 0.9),
+                0 0 0 1px rgba(15, 18, 40, 0.7);
+            z-index: 1;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            padding: 18px 22px;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-front {
+            background: radial-gradient(circle at top left, #ffffff 0, #f4f4ff 35%, #eceff1 100%);
+        }
+
+        .card-back {
+            background: radial-gradient(circle at top right, #fff3d1 0, #ffe0b2 35%, #ffe082 100%);
+            transform: rotateY(180deg);
+        }
+
+        .progress {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.12em;
+            margin-bottom: 6px;
+        }
+
+        .question {
+            font-size: 17px;
+            color: #222;
+        }
+
+        .keywords-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #8d6e63;
+            margin-bottom: 6px;
+        }
+
+        .keywords {
+            margin: 0;
+            padding-left: 18px;
+            color: #4e342e;
+            font-size: 14px;
+        }
+
+        .keywords li {
+            margin-bottom: 3px;
+        }
+
+        /* Dół aplikacji */
+
+        .bottom {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .left, .right {
+            flex: 1;
+        }
+
+        label.section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 130px;
+            resize: vertical;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: radial-gradient(circle at top left, #27293f 0, #181a2b 55%);
+            color: var(--text-light);
+            font-size: 13px;
+            padding: 10px 12px;
+            outline: none;
+            line-height: 1.4;
+        }
+
+        textarea:focus {
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 1px rgba(83, 109, 254, 0.5);
+        }
+
+        #feedback {
+            margin: 0;
+            padding: 10px 12px;
+            min-height: 130px;
+            border-radius: 10px;
+            background: rgba(20, 22, 40, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            color: #ffeb3b;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+        }
+
+        button:active {
+            transform: translateY(1px) scale(0.99);
+            box-shadow: none;
+        }
+
+        #checkBtn {
+            background: linear-gradient(135deg, #42a5f5, #536dfe);
+            color: white;
+            box-shadow: 0 8px 18px rgba(66, 165, 245, 0.5);
+        }
+
+        #flipBtn {
+            background: linear-gradient(135deg, #26a69a, #00897b);
+            color: white;
+            box-shadow: 0 8px 18px rgba(38, 166, 154, 0.5);
+        }
+
+        #nextBtn {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            box-shadow: 0 8px 18px rgba(245, 124, 0, 0.5);
+        }
+
+        #resetBtn {
+            background: linear-gradient(135deg, #616161, #424242);
+            color: #eeeeee;
+            box-shadow: 0 8px 18px rgba(97, 97, 97, 0.5);
+        }
+
+        button:hover {
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 900px) {
+            .bottom {
+                flex-direction: column;
+            }
+            .card {
+                height: 250px;
+            }
+            .video-bar {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+                padding: 0 10px;
+            }
+            #videoToggleBtn {
+                align-self: center;
+            }
+            #sideGif {
+                display: none;
+            }
+            #spotifyPlayer {
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- GIF po lewej stronie ekranu -->
+<img id="sideGif" src="przemek.gif" alt="Przemek gif">
+
+<!-- Przycisk Robert Kubica (audio) po prawej -->
+<button id="kubicaBtn">Robert Kubica</button>
+
+<!-- Pasek wideo NA GÓRZE (nad fiszkami) -->
+<div class="video-bar">
+    <video id="topVideo"
+           src="lego.mp4"
+           controls>
+        Twój browser nie obsługuje wideo HTML5.
+    </video>
+    <button id="videoToggleBtn">Play film</button>
+</div>
+
+<div class="app">
+    <h1>Fiszki z pozytywizmu</h1>
+    <h2>Lalka • Nad Niemnem • Gloria victis • Katarynka</h2>
+
+    <div class="card-wrapper">
+        <div class="card" id="card">
+            <div class="card-inner">
+                <div class="card-face card-front">
+                    <div class="progress" id="progress"></div>
+                    <div class="question" id="question"></div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="keywords-title">Słowa‑klucze</div>
+                    <ul class="keywords" id="keywords"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="left">
+            <label class="section-title">Twoja odpowiedź</label>
+            <textarea id="answer"
+                      placeholder="Spróbuj własnymi słowami odpowiedzieć na pytanie. Potem kliknij „Sprawdź odpowiedź” i zobacz, ile kluczowych elementów trafiłeś."></textarea>
+        </div>
+        <div class="right">
+            <label class="section-title">Analiza odpowiedzi (słowa‑klucze)</label>
+            <pre id="feedback"></pre>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button id="checkBtn">Sprawdź odpowiedź</button>
+        <button id="flipBtn">Obróć kartę</button>
+        <button id="nextBtn">Następna karta</button>
+        <button id="resetBtn">Zacznij od nowa</button>
+    </div>
+</div>
+
+<!-- Audio z Twojego folderu (Robert Kubica) -->
+<audio
+    id="kubicaAudio"
+    src="eeee.mp3"
+    loop
+></audio>
+
+<!-- MINI‑ODTWARZACZ SPOTIFY – TWOJA PLAYLISTA -->
+<iframe id="spotifyPlayer"
+        src="https://open.spotify.com/embed/playlist/37i9dQZEVXdhqlDfr4OXSQ"
+        width="380" height="200" frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy">
+</iframe>
+
+<script>
+    const cards = [
+        {
+            question: "Scharakteryzuj filozofię Herberta Spencera.",
+            keywords: [
+                "ewolucjonizm – rozwój przyrody i społeczeństwa",
+                "społeczeństwo jak organizm",
+                "walka o byt między jednostkami i grupami",
+                "przetrwanie najlepiej przystosowanych",
+                "ograniczona rola państwa, mała ingerencja"
+            ],
+            check: [
+                "ewolucjonizm",
+                "organizm",
+                "walka o byt",
+                "przetrwanie",
+                "państwo"
+            ]
+        },
+        {
+            question: "Wyjaśnij hasło pozytywizmu: asymilacja Żydów.",
+            keywords: [
+                "wspólne społeczeństwo Polaków i Żydów",
+                "równe prawa obywatelskie",
+                "współpraca w sprawach kraju",
+                "\"Mendel Gdański\", Szuman, Szlangbaum z \"Lalki\"",
+                "zgoda zamiast uprzedzeń i antysemityzmu"
+            ],
+            check: [
+                "wspólne społeczeństwo",
+                "równe prawa",
+                "współpraca",
+                "mendel gdański",
+                "uprzedzeń"
+            ]
+        },
+        {
+            question: "Wyjaśnij hasło pozytywizmu: naturalizm.",
+            keywords: [
+                "kierunek literacki (odmiana realizmu)",
+                "prawda bez upiększeń, bieda, brzydota",
+                "dokładność opisu jak w nauce",
+                "wpływ środowiska i dziedziczności (determinizm)",
+                "przykład: opisy Powiśla w \"Lalce\""
+            ],
+            check: [
+                "kierunek literacki",
+                "prawda bez upiększeń",
+                "dokładność",
+                "dziedziczność",
+                "powiśla"
+            ]
+        },
+        {
+            question: "Omów osobowość Stanisława Wokulskiego jako romantyka.",
+            keywords: [
+                "uczucie ważniejsze niż rozum",
+                "idealna, nieszczęśliwa miłość do Izabeli",
+                "udział w powstaniu styczniowym",
+                "samotność, poczucie niezrozumienia",
+                "wewnętrzny tragizm, skłonność do desperackich gestów"
+            ],
+            check: [
+                "uczucie",
+                "nieszczęśliwa miłość",
+                "powstanie styczniowe",
+                "samotność",
+                "tragizm"
+            ]
+        },
+        {
+            question: "Scharakteryzuj postać Izabeli Łęckiej.",
+            keywords: [
+                "młoda arystokratka z \"Lalki\"",
+                "piękna, wychowana w salonowych manierach",
+                "próżna, egoistyczna, oderwana od pracy",
+                "pogarda dla mieszczan i kupców",
+                "wyrachowanie wobec Wokulskiego, pustka arystokracji"
+            ],
+            check: [
+                "arystokratka",
+                "piękna",
+                "próżna",
+                "pogarda",
+                "wyrachowanie"
+            ]
+        },
+        {
+            question: "Jaki stosunek do pracy mają bohaterowie „Nad Niemnem”?",
+            keywords: [
+                "praca = główna wartość moralna",
+                "Bohatyrowicze – ciężka praca na roli",
+                "Benedykt – obowiązek wobec ziemi i przodków",
+                "Justyna dojrzewa dzięki pracy w zaścianku",
+                "leniwi bohaterowie pokazani negatywnie"
+            ],
+            check: [
+                "praca = wartość",
+                "bohatyrowicze",
+                "benedykt",
+                "justyna",
+                "leniwi"
+            ]
+        },
+        {
+            question: "W jaki sposób E. Orzeszkowa ukazała bohaterstwo powstańców w „Gloria victis”?",
+            keywords: [
+                "odwaga, wierność ojczyźnie aż do śmierci",
+                "podniosły, niemal legendarny ton opisu",
+                "narrator: przyroda (las, wiatr, drzewa)",
+                "tytuł: \"chwała zwyciężonym\" – gloria victis",
+                "kult pamięci, moralne zwycięstwo mimo klęski"
+            ],
+            check: [
+                "odwaga",
+                "podniosły",
+                "przyroda",
+                "chwała zwyciężonym",
+                "pamięci"
+            ]
+        },
+        {
+            question: "Udowodnij, że „Katarynka” B. Prusa to nowela.",
+            keywords: [
+                "krótki utwór epicki",
+                "jeden główny wątek (przemiana pana Tomasza)",
+                "mało postaci, brak wątków pobocznych",
+                "wyraźny punkt kulminacyjny – zgoda na katarynkę",
+                "puenta i morał – budzi się dobro w Tomaszu"
+            ],
+            check: [
+                "krótki",
+                "jeden główny wątek",
+                "mało postaci",
+                "punkt kulminacyjny",
+                "puenta"
+            ]
+        }
+    ];
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    const cardEl   = document.getElementById("card");
+    const progress = document.getElementById("progress");
+    const question = document.getElementById("question");
+    const keywordsEl = document.getElementById("keywords");
+    const answer   = document.getElementById("answer");
+    const feedback = document.getElementById("feedback");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const flipBtn  = document.getElementById("flipBtn");
+    const nextBtn  = document.getElementById("nextBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let order = [...cards.keys()];
+    shuffle(order);
+    let index = 0;
+
+    function setCard() {
+        if (index >= order.length) {
+            question.textContent = "To już wszystkie fiszki.";
+            progress.textContent = "";
+            keywordsEl.innerHTML = "";
+            feedback.textContent = "Kliknij „Zacznij od nowa”, żeby powtórzyć całość.";
+            answer.value = "";
+            cardEl.classList.remove("flipped");
+            return;
+        }
+
+        const cardData = cards[order[index]];
+        progress.textContent = `Karta ${index + 1} z ${order.length}`;
+        question.textContent = cardData.question;
+        keywordsEl.innerHTML = cardData.keywords
+            .map(k => `<li>${k}</li>`)
+            .join("");
+
+        feedback.textContent = "";
+        answer.value = "";
+        cardEl.classList.remove("flipped");
+    }
+
+    function checkAnswer() {
+        if (index >= order.length) return;
+
+        const cardData = cards[order[index]];
+        const txt = answer.value.toLowerCase();
+
+        if (!txt.trim()) {
+            alert("Najpierw wpisz swoją odpowiedź.");
+            return;
+        }
+
+        let found = [];
+        let missing = [];
+        let lines = [];
+
+        for (const kw of cardData.check) {
+            if (txt.includes(kw)) {
+                found.push(kw);
+                lines.push(`✔ ${kw}`);
+            } else {
+                missing.push(kw);
+                lines.push(`✘ ${kw}`);
+            }
+        }
+
+        const score = found.length;
+        const total = cardData.check.length;
+
+        let result = `Wynik: ${score}/${total} kluczowych elementów.\n\n` +
+                     lines.join("\n");
+        if (missing.length) {
+            result += "\n\nBrakuje jeszcze m.in.:\n" + missing.join(", ");
+        }
+
+        feedback.textContent = result;
+    }
+
+    function flipCard() {
+        cardEl.classList.toggle("flipped");
+    }
+
+    function nextCard() {
+        if (index < order.length) {
+            index++;
+            setCard();
+        }
+    }
+
+    function resetCards() {
+        order = [...cards.keys()];
+        shuffle(order);
+        index = 0;
+        setCard();
+    }
+
+    checkBtn.addEventListener("click", checkAnswer);
+    flipBtn .addEventListener("click", flipCard);
+    nextBtn .addEventListener("click", nextCard);
+    resetBtn.addEventListener("click", resetCards);
+
+    setCard();
+
+    // Audio – Robert Kubica
+    const kubicaAudio = document.getElementById("kubicaAudio");
+    const kubicaBtn   = document.getElementById("kubicaBtn");
+    let kubicaPlaying = false;
+
+    kubicaBtn.addEventListener("click", () => {
+        if (!kubicaPlaying) {
+            kubicaAudio.play()
+                .then(() => {
+                    kubicaPlaying = true;
+                    kubicaBtn.textContent = "Robert Kubica (STOP)";
+                })
+                .catch(() => {
+                    alert("Przeglądarka zablokowała odtwarzanie. Spróbuj kliknąć jeszcze raz.");
+                });
+        } else {
+            kubicaAudio.pause();
+            kubicaPlaying = false;
+            kubicaBtn.textContent = "Robert Kubica";
+        }
+    });
+
+    // Wideo – Play/Pauza
+    const topVideo       = document.getElementById("topVideo");
+    const videoToggleBtn = document.getElementById("videoToggleBtn");
+
+    videoToggleBtn.addEventListener("click", () => {
+        if (!topVideo) return;
+
+        if (topVideo.paused) {
+            topVideo.play()
+                .then(() => {
+                    videoToggleBtn.textContent = "Pauza filmu";
+                })
+                .catch(() => {
+                    alert("Przeglądarka zablokowała odtwarzanie wideo. Spróbuj kliknąć jeszcze raz.");
+                });
+        } else {
+            topVideo.pause();
+            videoToggleBtn.textContent = "Play film";
+        }
+    });
+</script>
+</body>
+</html>

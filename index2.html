@@ -9,24 +9,29 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
             margin: 0;
-            min-height: 100vh;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont,
                          "Segoe UI", Roboto, sans-serif;
+            background: #000; /* tło pod obrazkiem (paski) */
+        }
 
-            /* TŁO: koles.jpg na cały ekran */
-            background:
-                linear-gradient(135deg, rgba(0,0,0,0.35), rgba(0,0,0,0.55)),
-                url("koles.jpg") center / cover no-repeat fixed;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Obraz na cały ekran – zawsze cały widoczny */
+        #bgImg {
+            position: fixed;
+            inset: 0;              /* top:0; right:0; bottom:0; left:0 */
+            width: 100%;
+            height: 100%;
+            object-fit: contain;   /* CAŁY obraz, bez obcinania */
+            z-index: -1;           /* za przyciskiem */
         }
 
         /* Przycisk na dole ekranu, wycentrowany */
-
         #motoBtn {
             position: fixed;
             left: 50%;
@@ -58,6 +63,9 @@
     </style>
 </head>
 <body>
+
+<!-- Obraz na cały ekran -->
+<img id="bgImg" src="koles.jpg" alt="koles">
 
 <button id="motoBtn">Odtwórz Moto Moto</button>
 

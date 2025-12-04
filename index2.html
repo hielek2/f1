@@ -28,14 +28,13 @@
             width: 100%;
             height: 100%;
             object-fit: contain;   /* CAŁY obraz, bez obcinania */
-            z-index: -1;           /* za przyciskiem */
+            z-index: -1;           /* za przyciskami */
         }
 
-        /* Przycisk na dole ekranu, wycentrowany */
-        #motoBtn {
+        /* Wspólny styl przycisków */
+        .main-btn {
             position: fixed;
             left: 50%;
-            bottom: 20px;
             transform: translateX(-50%);
             border: none;
             border-radius: 999px;
@@ -51,14 +50,23 @@
             white-space: nowrap;
         }
 
-        #motoBtn:hover {
+        .main-btn:hover {
             filter: brightness(1.05);
             transform: translateX(-50%) translateY(-1px);
         }
 
-        #motoBtn:active {
+        .main-btn:active {
             transform: translateX(-50%) translateY(1px) scale(0.98);
             box-shadow: none;
+        }
+
+        /* Konkretne pozycje przycisków */
+        #backBtn {
+            bottom: 70px;   /* wyżej */
+        }
+
+        #motoBtn {
+            bottom: 20px;   /* niżej */
         }
     </style>
 </head>
@@ -67,7 +75,8 @@
 <!-- Obraz na cały ekran -->
 <img id="bgImg" src="koles.jpg" alt="koles">
 
-<button id="motoBtn">Odtwórz Moto Moto</button>
+<button id="backBtn" class="main-btn">POWRUT</button>
+<button id="motoBtn" class="main-btn">Odtwórz Moto Moto</button>
 
 <!-- Audio bez pętli -->
 <audio id="motoAudio" src="motomoto.mp3"></audio>
@@ -75,7 +84,14 @@
 <script>
     const motoAudio = document.getElementById("motoAudio");
     const motoBtn   = document.getElementById("motoBtn");
+    const backBtn   = document.getElementById("backBtn");
 
+    // powrót do index.html
+    backBtn.addEventListener("click", () => {
+        window.location.href = "index.html";
+    });
+
+    // odtwarzanie Moto Moto (bez pętli)
     motoBtn.addEventListener("click", () => {
         try {
             motoAudio.currentTime = 0;  // od początku

@@ -35,7 +35,6 @@
 
             color: var(--text-light);
 
-            /* PC: wszystko jedno pod drugim (wideo nad fiszkami) */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -56,9 +55,9 @@
         .video-bar video {
             flex: 1;
             width: 100%;
-            height: 210px;          /* niska wysokość → „szerszy” format */
+            height: 210px;
             border-radius: 14px;
-            object-fit: fill;       /* rozciąga obraz (zmiana proporcji) */
+            object-fit: fill;
             background: #000;
             box-shadow:
                 0 18px 35px rgba(7, 5, 12, 0.9),
@@ -151,8 +150,6 @@
             box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
             transition: transform 0.12s ease, box-shadow 0.12s ease;
         }
-
-        /* Animacja lekkiego podskoku */
 
         @keyframes bounceOnce {
             0%   { transform: translateY(0); }
@@ -299,8 +296,6 @@
             margin-bottom: 3px;
         }
 
-        /* Dół aplikacji */
-
         .bottom {
             display: flex;
             gap: 14px;
@@ -405,6 +400,71 @@
             transform: translateY(-1px);
         }
 
+        /* PRZYCISK JUMPSCARE „saaas” – LEWY GÓRNY RÓG */
+
+        #saaasBtn {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            border: none;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #ef5350, #b71c1c);
+            color: #ffffff;
+            box-shadow: 0 6px 14px rgba(183, 28, 28, 0.6);
+            cursor: pointer;
+            z-index: 1100;
+        }
+
+        #saaasBtn:hover {
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+        }
+
+        #saaasBtn:active {
+            transform: translateY(1px) scale(0.97);
+            box-shadow: none;
+        }
+
+        /* OVERLAY JUMPSCARE */
+
+        #jumpscareOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.96);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.05s linear;
+            z-index: 2000;  /* nad wszystkim */
+        }
+
+        #jumpscareOverlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #jumpscareOverlay img {
+            max-width: 100%;
+            max-height: 100%;
+            transform: scale(1.2);
+        }
+
+        #jumpscareOverlay.show img {
+            animation: scareZoom 0.15s ease-out forwards;
+        }
+
+        @keyframes scareZoom {
+            0%   { transform: scale(1.4); }
+            100% { transform: scale(1.0); }
+        }
+
         /* TELEFON / TABLET – MAŁA SZEROKOŚĆ */
 
         @media (max-width: 900px) {
@@ -459,7 +519,7 @@
             }
 
             #sideGif {
-                display: none;       /* ukryj gif na telefonie */
+                display: none;
             }
 
             #kubicaBox {
@@ -480,6 +540,14 @@
     </style>
 </head>
 <body>
+
+<!-- PRZYCISK JUMPSCARE -->
+<button id="saaasBtn">saaas</button>
+
+<!-- OVERLAY JUMPSCARE -->
+<div id="jumpscareOverlay">
+    <img src="jumscare.jpg" alt="jumpscare">
+</div>
 
 <!-- GIF po lewej stronie ekranu -->
 <img id="sideGif" src="przemek.gif" alt="Przemek gif">
@@ -545,6 +613,9 @@
     src="eeee.mp3"
     loop
 ></audio>
+
+<!-- Audio jumpscare -->
+<audio id="jumpscareAudio" src="jumpscare.mp3"></audio>
 
 <!-- MINI‑ODTWARZACZ SPOTIFY – TWOJA PLAYLISTA -->
 <iframe id="spotifyPlayer"
@@ -807,19 +878,16 @@
     const kubicaImg   = document.getElementById("kubicaImg");
     let kubicaPlaying = false;
 
-    // gdy utwór sam się skończy, ustaw stan na "nie gra"
     kubicaAudio.addEventListener("ended", () => {
         kubicaPlaying = false;
     });
 
     kubicaImg.addEventListener("click", () => {
-        // animacja podskoku
         kubicaImg.classList.remove("bounce");
-        void kubicaImg.offsetWidth; // reset animacji
+        void kubicaImg.offsetWidth;
         kubicaImg.classList.add("bounce");
 
         if (!kubicaPlaying) {
-            // start od początku
             try {
                 kubicaAudio.currentTime = 0;
             } catch (e) {}
@@ -827,11 +895,8 @@
                 .then(() => {
                     kubicaPlaying = true;
                 })
-                .catch(() => {
-                    // jeśli przeglądarka zablokuje – nic nie robimy
-                });
+                .catch(() => {});
         } else {
-            // jeśli już gra – zatrzymaj
             kubicaAudio.pause();
             kubicaPlaying = false;
         }
@@ -856,6 +921,24 @@
             topVideo.pause();
             videoToggleBtn.textContent = "Play film";
         }
+    });
+
+    // JUMPSCARE – saaas
+    const saaasBtn = document.getElementById("saaasBtn");
+    const jsOverlay = document.getElementById("jumpscareOverlay");
+    const jsAudio   = document.getElementById("jumpscareAudio");
+
+    saaasBtn.addEventListener("click", () => {
+        jsOverlay.classList.add("show");
+        try {
+            jsAudio.currentTime = 0;
+        } catch (e) {}
+        jsAudio.play().catch(() => {});
+
+        setTimeout(() => {
+            jsOverlay.classList.remove("show");
+            jsAudio.pause();
+        }, 1200);  // ok. 1,2 sekundy jumpscare'a
     });
 </script>
 </body>

@@ -442,7 +442,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.05s linear;
-            z-index: 2000;  /* nad wszystkim */
+            z-index: 2000;
         }
 
         #jumpscareOverlay.show {
@@ -546,7 +546,7 @@
 
 <!-- OVERLAY JUMPSCARE -->
 <div id="jumpscareOverlay">
-    <img src="jumscare.jpg" alt="jumpscare">
+    <img src="jumpscare.jpg" alt="jumpscare">
 </div>
 
 <!-- GIF po lewej stronie ekranu -->
@@ -617,9 +617,9 @@
 <!-- Audio jumpscare -->
 <audio id="jumpscareAudio" src="jumpscare.mp3"></audio>
 
-<!-- MINI‑ODTWARZACZ SPOTIFY – TWOJA PLAYLISTA -->
+<!-- MINI‑ODTWARZACZ SPOTIFY – PROFIL ARTYSTY -->
 <iframe id="spotifyPlayer"
-        src="https://open.spotify.com/embed/playlist/37i9dQZEVXdhqlDfr4OXSQ"
+        src="https://open.spotify.com/embed/artist/2j2UkX1yKVgfoXrdF06SkS"
         width="380" height="200" frameborder="0"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy">
@@ -938,7 +938,7 @@
         setTimeout(() => {
             jsOverlay.classList.remove("show");
             jsAudio.pause();
-        }, 1200);  // ok. 1,2 sekundy jumpscare'a
+        }, 1200);
     });
 </script>
 </body>
